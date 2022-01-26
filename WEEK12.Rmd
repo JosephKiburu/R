@@ -1,0 +1,494 @@
+---
+title: "WEEK12"
+author: "Joseph Kiburu"
+date: "1/26/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+DEFINING THE QUESTION
+
+Predicting individuals that are likely to click on an ad.
+
+DEFINING THE METRIC FOR SUCCESS
+
+Finding and recommending the different feature characteristics that will increase the number of clicks in an ad.
+
+UNDERSTANDING THE CONTEXT
+
+In a former advertising ad, nine different features were recorded as influencing whether a person clicks on the ad or not. Based on these same features, we will try and figure out individuals who are most likely to click on a new ad and provide insights on how to increase the number of clicks based on these features.
+
+EXPERIMENTAL DESIGN
+
+Data cleaning and preparation
+
+ -Loading libraries and data table
+ 
+ -Check for missing values
+ 
+ -Check for outliers and anomalies
+ 
+Performing Exploratory Data Analysis
+
+ -Univariate Analysis
+ 
+ - Bivariate Analysis
+ 
+Conclusions
+
+Recommendations
+
+DATA RELEVANCE
+
+Daily Time Spent on Site - the duration each person spends on the entrepreneur's blog
+
+Age - the person's age
+
+Area Income - The amount of money each person earns.
+
+Daily Internet Usage - the amount of data used by a person accessing the blog.
+
+Ad Topic line - what the ad talks about.
+
+City - the city where the person is located.
+
+Male - whether the person viewing the blog was male.
+
+Country - the country a person is located.
+
+Time stamp - the date and time a person viewed the blog. 
+
+Clicked on Ad - whether a person on the blog clicked the ad.
+
+
+
+```{r}
+# Installing readxl for reading our excel file.
+library("readxl")
+dataset <- read_excel(file.choose())
+head(dataset)
+```
+
+
+```{r}
+# Installing tidyverse will help us work with a data frame and also work with visualizations.
+library(tidyverse)
+```
+```{r}
+# Converting our excel file into a dataframe
+dataset<-data.frame(dataset)
+head(dataset)
+```
+
+```{r}
+# Checking our dataframe's dimension.
+dim(dataset)
+```
+We have 1000 rows and 10 columns.
+
+
+```{r}
+# Checking the data types of our columns.
+str(dataset)
+```
+.
+```{r}
+#Checking for missing values
+colSums(is.na(dataset))
+```
+We have no missing values in any of our columns.
+
+
+```{r}
+# Checking for outliers in our continuous variables.
+boxplot(dataset[,1])
+```
+No outliers in column 'Daily Time Spent on Site'
+
+
+```{r}
+boxplot(dataset[,2])
+```
+No outliers in column 'Age'
+
+```{r}
+boxplot(dataset[,3])
+
+```
+Presence of outliers in column 'Area Income' below the first quartile and none above the upper quartile.
+ 
+Before eliminating the outliers, we need to figure out why they are there in the first place and the possibility of these points having meaningful information.Area income is influenced by the different regions people live in. Different regions have different Area incomes. The column 'city' in our data set is used to represent the different regions people who visited the site live in. Therefore, there is a high possibility that the income levels being portrayed as outliers are actually real life income disparities containing valuable information. We will therefore not drop the outliers in this column.
+
+```{r}
+boxplot(dataset[,4])
+```
+No outliers in column 'Daily Internet Usage'.
+
+UNIVARIATE ANALYSIS
+
+
+```{r}
+# Finding the minimum, maximum, upper quartile, lower quartile, mean and median in our numerical columns
+summary(dataset[,1:4])
+```
+```{r}
+#Creating our mode function
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+```
+
+```{r}
+
+# Mode in our Age column
+Age.mode<-getmode(dataset$Age)
+Age.mode
+```
+
+```{r}
+# Mode in our Area Income column
+Area_income.mode<-getmode(dataset[,3])
+Area_income.mode
+```
+```{r}
+# Mode in our Internet Usage column
+Internet_usage.mode<-getmode(dataset[,4])
+Internet_usage.mode
+```
+
+```{r}
+# Mode in our Daily Time Spent on Site column
+Time.mode<-getmode(dataset[,1])
+Time.mode
+```
+
+MEASURES OF DISPERSION
+
+Range
+
+```{r}
+# Daily Time Spent on site column
+Time.range<-range(dataset[,1])
+Time.range
+```
+No Time spent below 32 minutes or above 91 minutes.
+
+```{r}
+# Age column
+Age.range<-range(dataset[,2])
+Age.range
+```
+
+No Age below 19 or above 61.
+
+
+```{r}
+# Area Income column
+Income.range<-range(dataset[,3])
+Income.range
+```
+
+No area has an income below 13996.5 or above 79484.8
+
+
+```{r}
+# Daily Internet Usage column
+Internet.range<-range(dataset[,4])
+Internet.range
+```
+
+No internet usage below 104.78 or above 269.96
+
+Interquartile range(IQR)
+
+IQR is a measure of how far apart the middle 50% of data spreads in value. It is derived from the difference between the upper quartile(Q3) and lower quartile(Q1).
+
+```{r}
+# Daily Time Spent on Site column
+Time.iqr<-IQR(dataset[,1])
+Time.iqr
+```
+
+For our first column, the IQR of the Time Spent on the site is 27.1875 minutes.
+
+
+```{r}
+# Age column
+Age.iqr<-IQR(dataset[,2])
+Age.iqr
+```
+
+The IQR of the age column is 13 years.
+
+
+```{r}
+# Area Income column
+Income.iqr<-IQR(dataset[,3])
+Income.iqr
+```
+
+The IQR of Area Income is 18438.83 Shillings.
+
+
+```{r}
+# Daily Internet Usage column
+Internet.iqr<-IQR(dataset[,4])
+Internet.iqr
+```
+
+The IQR of Daily Internet Usage is 79.9625 Mega Bytes.
+
+
+Standard Deviation(sd)
+
+The standard deviation tells us the spread of data from the mean. A low standard deviation indicates that our data points are clustered around the mean while a high standard deviation indicates that the data points are widely spread out.
+
+
+```{r}
+# Daily Time Spent on Site column
+Time.std<-sd(dataset[,1])
+Time.std
+```
+
+Daily Time spent on site has a low standard deviation of 15.85361. Values from the minimum and maximum values towards the mean are clustered around the mean. Presence of outliers very unlikely.
+
+
+
+```{r}
+# Age column
+Age.std<-sd(dataset[,2])
+Age.std
+```
+
+Age has a low standard deviation of 8.785562. Values from the minimum and maximum values towards the mean are clustered around the mean. Outliers absent.
+
+
+```{r}
+# Area Income column
+Area.std<-sd(dataset[,3])
+Area.std
+```
+
+Area Income has a high standard deviation of 13414.63. Values from the maximum values to the mean are clustered around the mean but values from the minimum value towards the mean are widely spread out. This is and indication of outliers in this column.
+
+
+```{r}
+# Daily Internet Usage column
+Internet.std<-sd(dataset[,4])
+Internet.std
+```
+
+Daily Internet Usage has a low standard deviation of 43.90234.  Both the min and max values are close to the mean, meaning data is clustered around the mean. No outliers present.
+
+
+Variance(var)
+
+Variance, which is the squared standard deviation, tells us the spread of data in our dataset. A large variance tells us our data is more spread out while a lower variance indicates clustered data points around the mean.
+
+
+```{r}
+# Daily Time Spent on Site column
+Time.var<-var(dataset[,1])
+Time.var
+```
+
+Daily Time spent on site has a low variance of 251.3371 indicating clustered minutes around the mean.
+
+
+```{r}
+# Age column
+Age.var<-var(dataset[,2])
+Age.var
+```
+
+Age has a low variance of 77.18611 indicating clustered ages around the mean.
+
+
+```{r}
+# Area Income column
+Income.var<-var(dataset[,3])
+Income.var
+```
+
+Area Income has a very high variance of 179952406 indicating widely spread out values from the mean. 
+
+
+```{r}
+# Daily Internet Usage column
+Internet.var<-var(dataset[,4])
+Internet.var
+```
+Daily Internet Usage has a low variance of 1927.415 indicating clustered values around the mean.
+
+
+Skewness
+
+Skewness is used to check the symmetry of a statistical distribution. A negative skewness shows that the distribution is left skewed while a positive skewness indicates a right skewed distribution. A heavy tailed left skewed distribution indicates outliers on the left tail while a heavy tailed right skewed distribution indicates outliers on the right tail. Since our prediction is a classification problem, we can use skewness to check for class imbalance in our dependent variable(Clicked on Ad).
+
+
+```{r}
+# Installing package 'moments' to get the skewness function.
+library(moments)
+```
+```{r}
+Clicked_ad.skew<-skewness(dataset[,10])
+Clicked_ad.skew
+```
+
+Our dependent variable has a skewness of 0 indicating a normal distribution. There is no class imbalance.
+
+
+Kurtosis
+
+Kurtosis is used to measure whether data is heavy tailed or light tailed. A high kurtosis means a heavy tail which indicates the presence of outliers while a low kurtosis means a light tail hence no outliers. Since it is not mandatory for independent variables to be normally distributed, we will check for normality in the dependent variable. A kurtosis greater than +1 indicates that the distribution is too peaked.(High kurtosis) while a kurtosis lower than -1 indicates a distribution that is too flat. Both of these parameters indicate that the distribution is not normal. 
+
+```{r}
+Clicked_ad.kurtosis<-kurtosis(dataset[,10])
+Clicked_ad.kurtosis
+```
+
+Our dependent variable has a kurtosis of 1 indicating we have a normal distribution.
+
+
+Graphical Analysis
+
+
+```{r}
+hist(dataset[,1], main='Histogram of Daily Time Spent on Site',xlab='Daily Time Spent on Site',col='blue')
+```
+
+Most of the people who visited  the site spent 75 to 85 minutes on the site.
+
+
+```{r}
+# Age column
+hist(dataset$Age, main='Histogram of Age', xlab='Age',col='blue')
+```
+
+From our histogram we can see that most of the people who visited the site are between the age 25 to 40.
+
+```{r}
+# Area Income column
+hist(dataset[,3],main='Histogram of Area Income',xlab='Area Income',çol='blue')
+```
+
+Most people who visited the site are in the 50,000 to 70,000 area income.
+
+
+```{r}
+# Male column
+Male<- dataset[,7]
+Male.frequency<-table(Male)
+Male.frequency
+```
+
+0 represents females while 1 represents Males. From our frequency table most of the people who visited the site are females. 
+
+```{r}
+# A barplot of the frequency distribution above.
+barplot(Male.frequency, main='Barplot of Gender', xlab='Gender',col='blue')
+```
+
+
+```{r}
+# Clicked on Ad column
+clicked_on_Ad<- dataset[,10]
+clicked_on_Ad.frequency<-table(clicked_on_Ad)
+clicked_on_Ad.frequency
+```
+
+0 represents those who didn't click on the ad while 1 represents those who clicked on the ad.Half of the people who visited the site clicked on the Ad and half did not. Further evidence of no class imbalance.
+
+```{r}
+# A barplot of the frequency distribution to describe this information.
+barplot(clicked_on_Ad.frequency, main='Barplot of people who clicked on the Add', xlab='Clicked on Add',col='blue')
+```
+
+
+BIVARIATE ANALYSIS
+
+
+```{r}
+# Selecting our numerical variables to check the correlation.
+numerical<-dataset[,1:4]
+numerical <- cbind(numerical, dataset[c('Male')])
+head(numerical)
+```
+```{r}
+# Creating a correlation matrix
+numerical.cor=cor(numerical,method=c('pearson'))
+numerical.cor
+```
+
+From our correlation matrix, there is very little positive correlation between columns 'Daily Time Spent on Site' and 'Daily Internet Usage'(0.51865848). The other columns have no correlation with each other.
+
+
+```{r}
+# Installing the correlation plot to visualize the correlation coefficients.
+library(corrplot)
+```
+```{r}
+corrplot(numerical.cor)
+```
+
+From our visualization we can see that most of the columns have no correlation with each other. There seems to be some sort of correlation between columns 'Daily Time Spent on Site' and 'Daily Internet Usage'. For a clearer visualization we can create a scatterplot.
+
+
+ScatterPlot
+
+Creating a scatterplot to confirm any positive correlation between column 'Daily Time Spent on Site' and 'Daily Internet Usage'.
+
+```{r}
+# Defining our variables
+Time<-dataset[,1]
+Internet<-dataset[,4]
+```
+
+```{r}
+plot(Time,Internet, xlab='Time',ylab='Internet')
+```
+
+Even though there is very little positive correlation between the two columns, from our scatterplot, there seems to be no correlation at all.
+
+CONCLUSION
+
+1. Most of the people who visited the blog were females.
+
+2. Most people who visited the blog are in the 50,000 to 70,000 area income.
+
+3. Most of the people who visited the blog are between the age of 25 to 40.
+
+4. Most of the people who visited the blog spent 75 to 85 minutes on the site.
+
+RECOMMENDATIONS
+
+Since most of the people who visited the blog are between the age 25 to 40, she should create more blogs which most 25 to 40 year olds are interested in reading. This would attract more people to the blog bringing the ad more exposure.
+
+Offering discounts on the course would benefit people from the higher income areas and also from the lower income areas. considering most people who visit the blog are on the higher side of the Income area, offering a discount increases the probability of these individuals clicking on the add than individuals in the lower income area since they are more exposed to the blog. Offering discounts will also help increase the chances of a person from a lower income area clicking on the add. Few from the lower income area might visit the blog, but some of them might join the course because of the discount.
+
+Since most people who visit her blog are from high income areas, she should try targeting more audiences from high income areas(High Income countries). This would expose more people to her blog increasing the chances of people clicking on her ad.
+
+Most of the people who visited the blog are females. She should therefore target audiences in areas with more females than males. Females are more likely to visit her blog than males. 
+
+Since most of the people who visited her blog were between 25 to 40 years old, she should target audiences in areas with this age group which would expose more people to her blog which would then increase her ad's exposure.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
