@@ -1,0 +1,480 @@
+---
+title: "WEEK13"
+author: "Joseph Kiburu"
+date: "1/29/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+DEFINING THE QUESTION
+
+Grouping similar customer behavior that lead to an outcome of either buying the brand or not.
+
+
+DEFINING THE METRIC FOR SUCCESS
+
+To create accurate groups of different customer characteristics that show whether a customer is likely to purchase the brand or not.
+
+
+UNDERSTANDING THE CONTEXT
+
+In order to understand the different customer groups and each groups' likelihood of buying the Russian brand, past transactions involving the same brand and the different customer behaviors were recorded. We are tasked with grouping these different behaviors together to find a pattern that results in either a customer buying the brand or not.
+
+
+EXPERIMENTAL DESIGN
+
+Data cleaning and preparation
+
+-Loading libraries and data table
+
+-Check for missing values
+
+-Check for outliers and anomalies
+
+Performing Exploratory Data Analysis
+
+-Univariate Analysis
+
+-Bivariate Analysis
+
+Conclusion
+
+Recommendation
+
+
+DATA RELEVANCE
+
+Administrative - page visited by the visitor
+
+Administrative Duration - total time spent on this page 
+
+Informational - page visited by the visitor
+
+Informational Duration - total time spent on this page 
+
+Product Related - page visited by the visitor
+
+Product Related Duration - total time spent on this page 
+
+Bounce Rate -  the percentage of visitors who enter the site from that page and then leave without triggering any other requests to the analytics server during that session. 
+
+Exit Rate - the percentage of people that were last in a certain page session.
+
+Page Value - the average value for a web page that a user visited before completing an e-commerce transaction.
+
+Special Day -  the closeness of the site visiting time to a specific special day (e.g. Mother’s Day, Valentine's Day) in which the sessions are more likely to be finalized with the transaction.
+
+Month - the month a person visited the brand's site.
+
+Weekend - the date a person visited the page.
+
+Revenue - Whether the person bought the brand or not.
+
+Browser - the browser a person used to access the site.
+
+Region - the place where each person comes from.
+
+Visitor type - whether new visitor or a returning visitor.
+
+Traffic type
+
+Operating system
+
+
+```{r}
+# Reading our file.
+df<-read.csv('http://bit.ly/EcommerceCustomersDataset')
+head(df)
+```
+
+```{r}
+# Checking the data types of our columns.
+str(df)
+```
+
+```{r}
+# Checking the dimension of our dataset
+dim(df)
+```
+
+```{r}
+# Checking for missing values
+colSums(is.na(df))
+```
+
+We do not have a lot of missing values. Dropping the missing values will still leave us with a big dataset to work with.
+
+```{r}
+# Dropping rows with missing values.
+
+df<-na.omit(df)
+dim(df)
+```
+
+```{r}
+# Checking for duplicates.
+
+duplicated<-df[duplicated(df),]
+dim(duplicated)
+```
+
+We have 117 rows of duplicated data.
+
+```{r}
+# Dropping the duplicates and picking only the unique items.
+df<-unique(df)
+dim(df)
+```
+
+```{r}
+# Checking the statistical summary.
+summary(df)
+```
+
+```{r}
+# Checking for outliers.
+
+boxplot(df[,1])
+
+```
+
+```{r}
+boxplot(df[, 2])
+
+```
+
+```{r}
+boxplot(df[,3])
+```
+
+We have a lot of outliers in our variables. We expect different customers to have different customer behavior and therefore the outliers in our dataset contain valuable information about the process under investigation. On top of that we have very many outliers and dropping them will leave us with a small dataset to work with. We will therefore not drop the outliers.
+
+UNIVARIATE ANALYSIS
+
+```{r}
+# Checking the mean , median, max and min in our continuous columns.
+
+summary(df)
+
+```
+
+From our summary we notice that we have the minimum time expressed as a negative number. This is an anomaly. Zero is the baseline. We are therefore going to drop -1 in all our time columns.
+
+```{r}
+# Dropping the obvious anomaly.
+df<-subset(df, Administrative_Duration!=-1)
+summary(df)
+```
+
+```{r}
+# Checking the size of data we will work with.
+dim(df)
+
+```
+
+We still have enough data to work with.
+
+
+RANGE
+
+Range tells us the scale of our data from the minimum to the maximum value.
+
+```{r}
+range(df[,1])
+
+```
+
+```{r}
+range(df[,2])
+```
+
+```{r}
+range(df[,3])
+```
+
+```{r}
+range(df[,4])
+```
+
+```{r}
+range(df[,5])
+```
+
+STANDARD DEVIATION
+
+The standard deviation tells us the spread of data from the mean. A low standard deviation indicates that our data points are clustered around the mean while a high standard deviation indicates that the data points are widely spread out.
+
+```{r}
+sd(df[,1])
+```
+
+```{r}
+sd(df[,2])
+```
+
+```{r}
+sd(df[,3])
+```
+
+```{r}
+sd(df[,4])
+```
+
+```{r}
+sd(df[,5])
+```
+
+INTERQUARTILE RANGE
+
+IQR is a measure of how far apart the middle 50% of data spreads in value.It is derived from the difference between the upper quartile(Q3) and lower quartile(Q1). A smaller value indicates that there are a lot of values centered in the middle 50% of data.
+
+```{r}
+IQR(df[,1])
+```
+
+```{r}
+IQR(df[,2])
+```
+
+```{r}
+IQR(df[,3])
+```
+
+```{r}
+IQR(df[,4])
+```
+
+```{r}
+IQR(df[,5])
+```
+
+GRAPHICAL ANALYSIS
+
+
+```{r}
+hist(df[,1], main='Histogram of the number of Administrative pages visited',xlab='Administrative',col='blue')
+```
+
+Most people who visited the site visited at most 2 Administrative pages.
+
+
+```{r}
+hist(df[,2], main='Histogram of Administrative Duration',xlab='Administrative Duration',col='blue')
+
+```
+
+Most people who visited the Administrative page spent 0 to 200 seconds on the page.
+
+```{r}
+hist(df[,3], main='Histogram of Information',xlab='Information',col='blue')
+
+```
+
+Most people who visited the site visited 0 to 2 information pages.
+
+```{r}
+hist(df[,4], main='Histogram of Information Duration',xlab='Information Duration',col='blue')
+
+```
+
+Most people who visited the information page spent between 0 to 200 seconds on the page.
+
+
+```{r}
+# Finding the month with the highest number of people visiting the site.
+Month<- df$Month
+Month.frequency<-table(Month)
+Month.frequency
+```
+
+```{r}
+barplot(Month.frequency, main='Barplot of Month', xlab='Month',col='blue')
+
+```
+
+May and November had the highest number of people visiting the site.
+
+
+```{r}
+# Checking the date with the highest number of people visiting the page.
+Weekend<-df$Weekend
+Weekend.frequency<-table(Weekend)
+Weekend.frequency
+```
+
+```{r}
+barplot(Weekend.frequency, main='Barplot of Weekend', xlab='Weekend',col='blue')
+```
+
+Most people visited the site on weekdays than on weekends.
+
+```{r}
+# Checking the number of people who bought the brand.
+Revenue<-df$Revenue
+Revenue.frequency<-table(Revenue)
+Revenue.frequency
+```
+```{r}
+
+barplot(Revenue.frequency, main='Barplot of Revenue', xlab='Revenue',col='blue')
+```
+
+Most people who visited the site did not buy the brand.
+
+```{r}
+# Checking the visitor type who mostly visited on the site.
+Visitor<-df$VisitorType
+Visitor.frequency<-table(Visitor)
+Visitor.frequency
+```
+```{r}
+barplot(Visitor.frequency, main='Barplot of VisitorType', xlab='Visitor Type',col='blue')
+```
+
+Most people who visited the site had visited the site before.
+
+
+BIVARIATE ANALYSIS
+
+
+```{r}
+# Checking for correlation in our variables.
+numerical<-df[,1:15]
+numerical$Month<-NULL
+head(numerical)
+```
+
+```{r}
+# Creating a correlation matrix
+numerical.cor=cor(numerical)
+numerical.cor
+```
+
+```{r}
+# Installing the correlation plot to visualize the correlation coefficients.
+library(corrplot)
+```
+
+```{r}
+corrplot(numerical.cor)
+```
+
+- There is a strong positive correlation between ProductRelated_Duration and ProductRelated.
+
+- There is a strong positive correlation between BounceRates and Exit rates.
+
+Correlated values tend to increase the variance in our dataset giving us outliers which can distort summaries of the distribution of the values. We will therefore drop one of the positively correlated features.
+
+```{r}
+# Dropping the correlated features.
+numerical$ProductRelated_Duration<-NULL
+numerical$BounceRates<-NULL
+
+dim(numerical)
+
+```
+MULTIVARIATE ANALYSIS
+
+```{r}
+# Performing dimensionality reduction.
+
+df.pca<-prcomp(numerical, center=TRUE, scale.=TRUE)
+summary(df.pca)
+```
+The proportion of variance tells us the impact of each component on the dataset. PC1 for example explains 22.4% of our dataset. PC12 explains the lowest at 2.9%.
+
+K-MEANS CLUSTERING
+
+K-Means clustering can handle a huge dataset compared to Hierarchical clustering and considering the huge dataset we are using, k-means will be a good clustering algorithm to go with.
+
+However, finding the number of clusters(k-value) is difficult. In our case, we have a large dataset with a lot of variables. To make computation faster, it would be better to go with a small k-value.
+
+```{r}
+# Defining the class which we will be using later to categorize our clusters in the different classes.
+numerical.class<-df[,'Revenue']
+```
+
+```{r}
+# Scaling our numerical variables so that no particular attribute has more impact on the clustering algorithm than others.
+numerical<-scale(numerical)
+```
+
+
+```{r}
+# Applying the clustering algorithm with 3 centroids.
+set.seed(42)
+result<- kmeans(numerical,3) 
+```
+
+```{r}
+# Previewing the no. of records in each cluster
+result$size 
+```
+The number of values in each cluster.
+
+```{r}
+# Plotting to see how ProductRelated and Exit Rates data points have been distributed in clusters.
+plot(numerical[,5:6], col = result$cluster) 
+```
+
+```{r}
+
+table(result$cluster, numerical.class)
+```
+Most of the people in cluster 1, 2 and 3 did not buy the brand. Cluster 1 has the highest number of people buying the brand at 37% followed by cluster 2 at 19% and cluster 3 with the lowest at 15%. That is in their respective clusters.
+
+
+HIERARCHICAL CLUSTERING
+
+Hierarchical clustering does not fare well with huge data. We have over 12000 rows of data. Using this amount of data will not give us a clear clustering. We will therefore pick the first fifty rows of our data and use them in our hierarchical clustering.
+
+But unlike K-Means, we do not need to find the the number of clusters required (the k-value), which is usually difficult to predict.
+
+```{r}
+# Applying the dist() function to find the Euclidean distance between observations.
+new<-numerical[1:50]
+d <- dist(new, method = "euclidean")
+
+```
+
+```{r}
+# Performing hierarchical clustering using the Ward's method
+res.hc <- hclust(d, method = "ward.D2" )
+```
+
+```{r}
+# Plotting the obtained dendrogram
+plot(res.hc, cex = 0.6, hang = -1)
+```
+
+CONCLUSION
+
+Most people visited the site on weekdays.
+
+Most people spent at most 200 seconds on any page on the website.
+
+Most people visited the site on May and November.
+
+Most people who visited the site did not buy the brand.
+
+Most of the people who visited the site were returning visitors. They had been to the site before.
+
+
+RECOMMENDATION
+
+Since most people who visited the site did not buy the brand, we should introduce a customer discount to encourage people to buy the brand.
+
+Advertisements of the brand should be made more on the weekdays than on the weekends since most people visit the site on the weekdays.
+
+
+Since most people who visit the site are returning visitors, we can show appreciation by sending an email thanking the customers who frequently visit the site even if most of them don't buy the brand. This might encourage them to buy the brand without even telling them to buy it.
+
+Since most people buy the brand on May and November, we should gift the customers something like the brand's merchandise t-shirt as a sign of appreciation and in turn a large number of people will be wearing the t_shirt and advertising the brand in large numbers.
+
+
+
+
+
