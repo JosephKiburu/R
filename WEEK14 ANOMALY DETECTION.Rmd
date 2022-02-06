@@ -1,0 +1,76 @@
+---
+title: "WEEK14 Anomaly Detection"
+author: "Joseph Kiburu"
+date: "2/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# Load tidyverse and anomalize
+
+library(tidyverse)
+library(anomalize)
+```
+
+
+```{r}
+# Loading our dataset.
+df<-read.csv('http://bit.ly/CarreFourSalesDataset')
+head(df)
+```
+
+
+```{r}
+# Checking the dimensions of our dataset.
+dim(df)
+```
+
+
+```{r}
+# Converting the date column to datetime.
+df$Date <- as.Date(df$Date, format = "%m/%d/%Y")
+df$Date <- as.POSIXct(df$Date)
+```
+
+
+
+```{r}
+# Previewing the first 6 rows of our dataset.
+head(df)
+```
+
+```{r}
+# Checking for missing values.
+colSums(is.na(df))
+```
+
+```{r}
+#Converting the dataframe to a tibble.
+
+df <- as_tibble(df)
+```
+
+
+```{r}
+#Applying the decompose and recompose function.
+
+anomalized <- df %>%
+    time_decompose(Sales, merge = TRUE) %>%
+    anomalize(remainder) %>%
+    time_recompose()
+anomalized %>% glimpse()
+```
+```{r}
+#Plotting to see if there anomalies
+anomalized %>% plot_anomalies(ncol = 3, alpha_dots = 0.5)
+```
+
+From our graph there is no indication of any anomaly in our dataset.
+
+
+

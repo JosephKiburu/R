@@ -1,0 +1,71 @@
+---
+title: "WEEK14 FEATURE SELECTION"
+author: "Joseph Kiburu"
+date: "2/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Loading our dataset.
+df<-read.csv('http://bit.ly/CarreFourDataset')
+head(df)
+
+```
+
+```{r}
+# Selecting our numerical variables.
+df<-df[,c(6:8,12,13,14,15,16)]
+head(df)
+
+```
+
+```{r}
+# Converting column quantity to numeric.
+df$Quantity<-as.numeric(df$Quantity)
+```
+
+```{r}
+# Dropping the gross.margin.percentage column which has a standard deviation of zero.
+df$gross.margin.percentage<-NULL
+```
+
+
+Using Feature ranking to find the best attributes in our dataset.
+```{r}
+# We will use the FSelector Package. This is a package containing functions for selecting attributes from a given dataset. 
+suppressWarnings(
+        suppressMessages(if
+                         (!require(FSelector, quietly=TRUE))
+                install.packages("FSelector")))
+library(FSelector)
+```
+
+```{r}
+# From the FSelector package, we use the correlation coefficient as a unit of valuation. 
+# This would be one of the several algorithms contained 
+# in the FSelector package that can be used rank the variables.
+
+Scores <- linear.correlation(Total~., df)
+Scores
+
+```
+
+
+These are our six best attributes in the dataset.
+
+```{r}
+# Ranking our best 5 attributes. We use cutoff function to select a subset. In our case, a subset of the top 5 attributes.
+Subset <- cutoff.k(Scores, 5)
+as.data.frame(Subset)
+```
+
+The above columns are the best attributes to work with in the dataset. These are the most important features.
+
+
+
+
+

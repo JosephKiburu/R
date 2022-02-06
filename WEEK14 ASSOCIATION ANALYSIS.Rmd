@@ -1,0 +1,115 @@
+---
+title: "WEEK14 ASSOCIATION RULES"
+author: "Joseph Kiburu"
+date: "2/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# We first we install the required arules library 
+library(arules)
+```
+
+```{R}
+# Loading our dataset
+
+df<-read.transactions('http://bit.ly/SupermarketDatasetII', sep=",")
+head(df)
+
+```
+
+```{r}
+# Verifying the object's class
+
+class(df)
+```
+
+```{r}
+# Previewing our first 5 transactions
+inspect(df[1:5])
+```
+
+```{r}
+# If we wanted to preview the items that make up our dataset,
+# alternatively we can do the following
+# ---
+# 
+dataset<-as.data.frame(itemLabels(df))
+colnames(dataset) <- "Item"
+head(dataset, 10) 
+
+```
+
+
+```{r}
+# Summary of the transaction dataset
+
+summary(df)
+```
+
+Mineral water is the most frequent item being bought.
+
+```{r}
+# Checking the frequency of items ranging from 5 to 8.
+itemFrequency(df[, 5:8],type = "absolute")
+round(itemFrequency(df[, 5:8],type = "relative")*100,2)
+```
+
+From range 5 to 8, black tea has the highest number of transactions while babies food has the least.
+
+```{r}
+# Visualizing top 10 most common items in our dataset and the items whose relative importance is at least 10%
+par(mfrow = c(1, 2))
+
+# plotting the frequency of items
+itemFrequencyPlot(df, topN = 10,col="darkgreen")
+itemFrequencyPlot(df, support = 0.1,col="darkred")
+
+```
+
+From our 10% support range, Mineral water has the highest support while milk has the least. Because of its popularity, there is a high number of mineral water being bought.
+
+```{r}
+# Building a model based on association rules using the apriori function using a 
+# support of 0.002 and confidence as 0.7.
+
+
+rules <- apriori (df, parameter = list(supp = 0.002, conf = 0.7))
+rules
+
+
+```
+
+
+Using a higher level of support can make the model lose interesting rules. In our case, we have 11 rules from a support of 0.002. Using a low confidence level increases the number of rules.
+
+```{r}
+# Checking the information about our model.
+summary(rules)
+
+```
+
+
+Most rules have 3 and 4 itemS with a support of 0.002 and a 70% confidence.
+
+```{r}
+# Observing rules built in our model
+# Checking our first six model rules.
+
+inspect(rules)
+```
+
+For the first rule, if someone buys nonfat milk and spaghetti, they are 72% likely to buy mineral water. Of all the rules, rule two is the best rule with a confidence of 95%.
+
+```{r}
+# Ordering these rules by the level of confidence
+
+rules<-sort(rules, by="confidence", decreasing=TRUE)
+inspect(rules)
+```
+
+Rules arranged from the best to the worst using the level of confidence as the criteria.

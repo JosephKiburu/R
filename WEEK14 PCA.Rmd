@@ -1,0 +1,104 @@
+---
+title: "WEEK14 PCA"
+author: "Joseph Kiburu"
+date: "2/5/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Loading our dataset.
+
+df<-read.csv('http://bit.ly/CarreFourDataset')
+head(df)
+```
+
+```{r}
+# checking the dimensions in our dataset
+dim(df)
+```
+
+```{r}
+# Checking our column data types
+str(df)
+```
+
+```{r}
+# Checking for missing values in our dataset
+colSums(is.na(df))
+
+```
+
+We have no missing values in our dataset.
+
+```{r}
+# Checking for duplicates
+duplicated<-df[duplicated(df),]
+duplicated
+```
+
+We have no duplicates.
+
+```{r}
+# Converting the Quantity column to numeric
+
+df$Quantity<-as.numeric(df$Quantity)
+```
+
+
+```{r}
+# Selecting our numerical variables for PCA
+
+dataset<-df[,c(6:8,12,13,14,15,16)]
+head(dataset)
+
+```
+
+
+When we try to perform PCA using the dataset columns,  We get an error telling us scaling is not possible since one or even more of our numerical variables has constant values meaning it has a standard deviation of zero. This means that the column has no variance, and performing PCA is not possible where there is no variance. We need to identify the column and drop it.
+
+```{r}
+# Column 13 which is 'gross.margin.percentage' is the column with no variance. 
+sd(df[,13])
+
+```
+
+```{r}
+# Dropping the column
+dataset$gross.margin.percentage<-NULL
+head(dataset)
+
+```
+
+```{r}
+# Performing PCA.
+# Passing the prcomp function to show how the samples are related to each other.
+# We will also centre our data so that we can find our line of best fit which passes through the centre.We do this because this is a linear combination of principal components. We also scale the data since PCA is sensitive to the size of data.
+
+dataset.pca<-prcomp(dataset,centre=TRUE, scale.=TRUE)
+summary(dataset.pca)
+```
+
+We get 7 principal components with different variation. PC1 explains 70% of the total variance, PC2 and PC3 each explain 14% of the total variance.
+
+```{r}
+# Plotting our PCA.
+
+# Installing our ggbiplot visualisation package which will help us plot.
+
+library(devtools)
+library(ggbiplot)
+
+```
+
+```{r}
+# Creating our plot.
+ggbiplot(dataset.pca)
+```
+
+Rating is the column that majorly contributes to the variation in PC1 since  it pushes the samples to the right side of the graph.
+
+
